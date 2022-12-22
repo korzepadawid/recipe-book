@@ -31,7 +31,7 @@ export class AuthController {
   })
   @ApiBadRequestResponse({ description: 'Invalid credentials.' })
   async login(@Body() loginDto: LoginRequestDto): Promise<AuthResponseDto> {
-    return new AuthResponseDto();
+    return this.authService.login(loginDto);
   }
 
   @Post('/register')
@@ -52,6 +52,6 @@ export class AuthController {
   async register(
     @Body() registerDto: RegisterRequestDto,
   ): Promise<AuthResponseDto> {
-    return new AuthResponseDto();
+    return this.authService.register(registerDto);
   }
 }
