@@ -17,6 +17,11 @@ interface ICreateUser {
   password: string;
 }
 
+interface IPasswordMatches {
+  plainText: string;
+  hash: string;
+}
+
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
@@ -34,7 +39,7 @@ export class UsersService {
   }
 
   /**
-   * The method finds a user by email or a username.
+   * The method finds a user by email or username.
    * @param emailAndUsername details used to search for a user
    * @returns a user that matches the search criteria
    */
@@ -43,5 +48,26 @@ export class UsersService {
     username,
   }: IFindByEmailOrUsername): Promise<User> {
     return this.userModel.findOne({ $or: [{ email }, { username }] }).exec();
+  }
+
+  /**
+   * The method finds a user by the given email.
+   * @param email user's email
+   * @returns the user with the give email
+   */
+  async findByEmail(email: string): Promise<User> {
+    return this.userModel.findOne({ email }).exec();
+  }
+
+  /**
+   * Verifies the hash with the password.
+   * @param IPasswordMatches the plain text password and the hashed password
+   * @returns true when match, false otherwise
+   */
+  async passwordMatches({
+    plainText,
+    hash,
+  }: IPasswordMatches): Promise<boolean> {
+    return bcrypt.compare(plainText, hash);
   }
 }
