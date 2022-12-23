@@ -6,11 +6,15 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import {
   AuthResponseDto,
+  ConflictErrorDto,
   LoginRequestDto,
   RegisterRequestDto,
+  UnauthorizedErrorDto,
+  ValidationErrorDto,
 } from './auth.dto';
 import { AuthService } from './auth.service';
 
@@ -29,7 +33,10 @@ export class AuthController {
     description: "The user's been successfully authenticated.",
     type: AuthResponseDto,
   })
-  @ApiBadRequestResponse({ description: 'Invalid credentials.' })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentials.',
+    type: UnauthorizedErrorDto,
+  })
   async login(@Body() loginDto: LoginRequestDto): Promise<AuthResponseDto> {
     return this.authService.login(loginDto);
   }
@@ -47,8 +54,12 @@ export class AuthController {
   })
   @ApiConflictResponse({
     description: 'The user already exists.',
+    type: ConflictErrorDto,
   })
-  @ApiBadRequestResponse({ description: 'Validation error.' })
+  @ApiBadRequestResponse({
+    description: 'Validation error.',
+    type: ValidationErrorDto,
+  })
   async register(
     @Body() registerDto: RegisterRequestDto,
   ): Promise<AuthResponseDto> {

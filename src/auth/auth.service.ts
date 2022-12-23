@@ -1,7 +1,7 @@
 import {
   ConflictException,
-  ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/user.schema';
@@ -57,7 +57,7 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
-      throw new ForbiddenException('invalid credentials');
+      throw new UnauthorizedException('invalid credentials');
     }
 
     const match = await this.usersService.passwordMatches({
@@ -66,7 +66,7 @@ export class AuthService {
     });
 
     if (!match) {
-      throw new ForbiddenException('invalid credentials');
+      throw new UnauthorizedException('invalid credentials');
     }
 
     return this.mapUserToAuthDto(

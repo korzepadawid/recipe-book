@@ -55,3 +55,42 @@ export class AuthResponseDto {
   })
   accessToken: string;
 }
+
+export class UnauthorizedErrorDto {
+  @ApiProperty({ example: 401 })
+  statusCode: number;
+
+  @ApiProperty({ example: 'invalid credentials' })
+  message: string;
+
+  @ApiProperty({ example: 'Unauthorized' })
+  error: string;
+}
+
+export class ConflictErrorDto {
+  @ApiProperty({ example: 409 })
+  statusCode: number;
+
+  @ApiProperty({ example: 'user already exists' })
+  message: string;
+
+  @ApiProperty({ example: 'Confict' })
+  error: string;
+}
+
+export class ValidationErrorDto {
+  @ApiProperty({ example: 400 })
+  statusCode: number;
+
+  @ApiProperty({
+    example: [
+      'password must be longer than or equal to 6 characters',
+      'password must be shorter than or equal to 255 characters',
+      'password should not be empty',
+    ],
+  })
+  message: Array<string>;
+
+  @ApiProperty({ example: 'Bad request' })
+  error: string;
+}
