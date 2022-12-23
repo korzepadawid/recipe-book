@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -10,7 +11,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import * as mongoose from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { PostRequestDto } from './post.dto';
 import { PostsService } from './posts.service';
 
 @ApiTags('Posts')
@@ -22,18 +25,22 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createPost(@Request() req): Promise<any> {
-    return req.user;
+  async createPost(
+    @Body() postRequestDto: PostRequestDto,
+    @Request() req,
+  ): Promise<any> {
+    return this.postsService.createPost({
+      text: postRequestDto.text,
+      author: new mongoose.Types.ObjectId(req.user),
+    });
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   async findOnePostsPage(@Request() req): Promise<any> {
     return req.user;
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOnePost(@Request() req): Promise<any> {

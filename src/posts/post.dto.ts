@@ -5,3 +5,7 @@ export class PostRequestDto {
   @MaxLength(280)
   text: string;
 }
+
+export class PostResponseDto {
+  text: string;
+}
