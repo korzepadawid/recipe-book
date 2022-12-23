@@ -7,5 +7,8 @@ export class PostRequestDto {
 }
 
 export class PostResponseDto {
+  id: string;
+  inReplyTo?: string;
   text: string;
+  author: string;
 }
