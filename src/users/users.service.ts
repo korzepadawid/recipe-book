@@ -31,7 +31,7 @@ export class UsersService {
    * @param newUser a user to save
    * @returns a freshly created user
    */
-  async save(newUser: ICreateUser): Promise<User> {
+  async save(newUser: ICreateUser): Promise<UserDocument> {
     const hashedPassword = await bcrypt.hash(newUser.password, BCRYPT_SALT);
     const user = { ...newUser, password: hashedPassword };
     const createdUser = new this.userModel(user);
@@ -46,7 +46,7 @@ export class UsersService {
   async findByEmailOrUsername({
     email,
     username,
-  }: IFindByEmailOrUsername): Promise<User> {
+  }: IFindByEmailOrUsername): Promise<UserDocument | undefined> {
     return this.userModel.findOne({ $or: [{ email }, { username }] }).exec();
   }
 
@@ -55,7 +55,7 @@ export class UsersService {
    * @param email user's email
    * @returns the user with the give email
    */
-  async findByEmail(email: string): Promise<User> {
+  async findByEmail(email: string): Promise<UserDocument | undefined> {
     return this.userModel.findOne({ email }).exec();
   }
 

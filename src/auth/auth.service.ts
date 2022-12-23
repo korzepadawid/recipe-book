@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/user.schema';
 import { UsersService } from 'src/users/users.service';
 import {
@@ -13,7 +14,10 @@ import {
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   /**
    * The method validates and creates a new user with the given details.
@@ -37,7 +41,10 @@ export class AuthService {
       ...registerRequestDto,
     });
 
-    return this.mapUserToDto(user);
+    return this.mapUserToAuthDto(
+      user,
+      this.jwtService.sign({ id: user._id.toString() }),
+    );
   }
 
   /**
@@ -62,7 +69,10 @@ export class AuthService {
       throw new ForbiddenException('invalid credentials');
     }
 
-    return this.mapUserToDto(user);
+    return this.mapUserToAuthDto(
+      user,
+      this.jwtService.sign({ id: user._id.toString() }),
+    );
   }
 
   /**
@@ -70,9 +80,13 @@ export class AuthService {
    * @param User
    * @returns the auth response with user details and access token
    */
-  mapUserToDto = ({ username, email }: User): AuthResponseDto => ({
+  mapUserToAuthDto = (
+    { username, email }: User,
+    accessToken: string,
+  ): AuthResponseDto => ({
     ...new AuthResponseDto(),
     username,
     email,
+    accessToken,
   });
 }
