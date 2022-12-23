@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { UserDocument } from 'src/users/user.schema';
@@ -33,6 +37,20 @@ export class PostsService {
   }
 
   /**
+   *
+   * @param id
+   * @returns
+   */
+  async findPostById(id: string): Promise<PostResponseDto> {
+    const convertedId = this.convertStringToMongoId(id);
+    const post = await this.postModel.findById(convertedId);
+    if (!post) {
+      throw new NotFoundException('post not found');
+    }
+    return this.mapPostToDto(post);
+  }
+
+  /**
    * The method maps the post entity into the dto.
    * @param PostDocument post from the database
    * @returns a dto representation of the post
@@ -48,4 +66,11 @@ export class PostsService {
     text,
     author: (author as UserDocument)._id.toString(),
   });
+
+  convertStringToMongoId(id: string): Types.ObjectId {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('post not found');
+    }
+    return new Types.ObjectId(id);
+  }
 }

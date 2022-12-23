@@ -5,12 +5,13 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Patch,
   Post,
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import * as mongoose from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PostRequestDto } from './post.dto';
@@ -41,10 +42,11 @@ export class PostsController {
     return req.user;
   }
 
+  @ApiParam({ name: 'id' })
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async findOnePost(@Request() req): Promise<any> {
-    return req.user;
+  async findOnePost(@Param() params): Promise<any> {
+    return this.postsService.findPostById(params.id);
   }
 
   @ApiBearerAuth()
