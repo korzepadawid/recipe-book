@@ -35,7 +35,7 @@ export class UsersService {
     const hashedPassword = await bcrypt.hash(newUser.password, BCRYPT_SALT);
     const user = { ...newUser, password: hashedPassword };
     const createdUser = new this.userModel(user);
-    return createdUser.save();
+    return await createdUser.save();
   }
 
   /**
@@ -47,7 +47,9 @@ export class UsersService {
     email,
     username,
   }: IFindByEmailOrUsername): Promise<UserDocument | undefined> {
-    return this.userModel.findOne({ $or: [{ email }, { username }] }).exec();
+    return await this.userModel
+      .findOne({ $or: [{ email }, { username }] })
+      .exec();
   }
 
   /**
@@ -56,7 +58,7 @@ export class UsersService {
    * @returns the user with the give email
    */
   async findByEmail(email: string): Promise<UserDocument | undefined> {
-    return this.userModel.findOne({ email }).exec();
+    return await this.userModel.findOne({ email }).exec();
   }
 
   /**
@@ -68,6 +70,6 @@ export class UsersService {
     plainText,
     hash,
   }: IPasswordMatches): Promise<boolean> {
-    return bcrypt.compare(plainText, hash);
+    return await bcrypt.compare(plainText, hash);
   }
 }

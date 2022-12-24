@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
-import { PostsModule } from './posts/posts.module';
+import { RecipesModule } from './recipes/recipes.module';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { PostsModule } from './posts/posts.module';
         uri: process.env.MONGO_URI,
       }),
     }),
-    PostsModule,
+    RecipesModule,
   ],
 })
 export class AppModule {}
