@@ -42,6 +42,9 @@ export class LoginRequestDto {
 }
 
 export class AuthResponseDto {
+  @ApiProperty({ example: '63a813ae7e0e90f0ad17158h' })
+  id: string;
+
   @ApiProperty({ example: 'email@gmail.com' })
   email: string;
 

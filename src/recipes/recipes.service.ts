@@ -124,6 +124,16 @@ export class RecipesService {
   }
 
   /**
+   * The method returns all recipes created by the given user.
+   * @param userId
+   * @returns all recipes created by the given user
+   */
+  async findAllByUserId(userId: string): Promise<RecipeResponseDto[]> {
+    const recipes = await this.recipeModel.find({ author: userId }).exec();
+    return recipes.map(this.mapRecipeToDto);
+  }
+
+  /**
    * The method returns a recipe with the given id, othwerwise throws an error.
    * @throws NotFoundException when recipe doesn't exist
    * @param id an id of the requested recipe

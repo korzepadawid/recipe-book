@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/users/user.schema';
+import { UserDocument } from 'src/users/user.schema';
 import { UsersService } from 'src/users/users.service';
 import {
   AuthResponseDto,
@@ -81,10 +81,10 @@ export class AuthService {
    * @returns the auth response with user details and access token
    */
   mapUserToAuthDto = (
-    { username, email }: User,
+    { _id, username, email }: UserDocument,
     accessToken: string,
   ): AuthResponseDto => ({
-    ...new AuthResponseDto(),
+    id: _id.toString(),
     username,
     email,
     accessToken,
