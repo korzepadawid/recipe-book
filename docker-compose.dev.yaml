@@ -1,6 +1,20 @@
 version: '3.1'
 
 services:
+  app:
+    build:
+      context: .
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      MONGO_URI: mongodb://root:example@mongo:27017/
+      JWT_SECRET: thehardestsecretyouveeverseen
+      REDIS_URL: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - mongo
+      - redis
   mongo:
     image: mongo
     restart: always
