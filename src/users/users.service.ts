@@ -23,6 +23,9 @@ interface IPasswordMatches {
   hash: string;
 }
 
+const generateHashKeyForUser = (email: string, username: string) =>
+  `${email}-${username}`;
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -40,7 +43,6 @@ export class UsersService {
     const user = { ...newUser, password: hashedPassword };
     const createdUser = new this.userModel(user);
     const savedUser = await createdUser.save();
-    // await this.cache.set(, savedUser);
     return savedUser;
   }
 
@@ -53,9 +55,23 @@ export class UsersService {
     email,
     username,
   }: IFindByEmailOrUsername): Promise<UserDocument | undefined> {
-    return await this.userModel
+    const cachedUser: UserDocument = await this.cache.get(
+      generateHashKeyForUser(email, username),
+    );
+    if (cachedUser) {
+      return cachedUser;
+    }
+    const user = await this.userModel
       .findOne({ $or: [{ email }, { username }] })
       .exec();
+
+    if (user) {
+      await this.cache.set(
+        generateHashKeyForUser(user.email, user.username),
+        user,
+      );
+    }
+    return user;
   }
 
   /**
@@ -64,7 +80,15 @@ export class UsersService {
    * @returns the user with the give email
    */
   async findByEmail(email: string): Promise<UserDocument | undefined> {
-    return await this.userModel.findOne({ email }).exec();
+    const cachedUser: UserDocument = await this.cache.get(email);
+    if (cachedUser) {
+      return cachedUser;
+    }
+    const user = await this.userModel.findOne({ email }).exec();
+    if (user) {
+      await this.cache.set(user.email, user);
+    }
+    return user;
   }
 
   /**

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  CACHE_MANAGER,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -9,6 +14,7 @@ import {
   RecipeUpdateRequestDto,
 } from './recipe.dto';
 import { Recipe, RecipeDocument } from './recipe.schema';
+import { Cache } from 'cache-manager';
 
 const PAGE_LIMIT = 5;
 
@@ -27,6 +33,7 @@ const getPageOffset = (page: number): number => (page - 1) * PAGE_LIMIT;
 export class RecipesService {
   constructor(
     @InjectModel(Recipe.name) private recipeModel: Model<RecipeDocument>,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
 
   /**
@@ -43,7 +50,9 @@ export class RecipesService {
       author: new Types.ObjectId(userId),
     });
     const savedRecipe = await recipe.save();
-    return this.mapRecipeToDto(savedRecipe);
+    const recipeDto = this.mapRecipeToDto(savedRecipe);
+    await this.cache.set(savedRecipe._id.toString(), recipeDto);
+    return recipeDto;
   }
 
   /**
@@ -77,8 +86,14 @@ export class RecipesService {
    * @returns a dto representation of the recipe with the given id
    */
   async findById(id: string): Promise<RecipeResponseDto> {
+    const cachedRecipe: RecipeResponseDto = await this.cache.get(id);
+    if (cachedRecipe) {
+      return cachedRecipe;
+    }
     const recipe = await this.findRecipeByIdOrThrow(id);
-    return this.mapRecipeToDto(recipe);
+    const recipeDto = this.mapRecipeToDto(recipe);
+    await this.cache.set(id, recipeDto);
+    return recipeDto;
   }
 
   /**
@@ -110,6 +125,9 @@ export class RecipesService {
     }
 
     await recipe.save();
+
+    const recipeDto = this.mapRecipeToDto(recipe);
+    await this.cache.set(id, recipeDto);
   }
 
   /**
@@ -120,6 +138,7 @@ export class RecipesService {
     const recipe = await this.recipeModel.findById(id).exec();
     if (recipe) {
       await recipe.delete();
+      await this.cache.del(id);
     }
   }
 
