@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
+import { Cache } from 'cache-manager';
 
 const BCRYPT_SALT = 10;
 
@@ -24,7 +25,10 @@ interface IPasswordMatches {
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
 
   /**
    * The method hashes a password(with bcrypt) and saves a user to the database.
@@ -35,7 +39,9 @@ export class UsersService {
     const hashedPassword = await bcrypt.hash(newUser.password, BCRYPT_SALT);
     const user = { ...newUser, password: hashedPassword };
     const createdUser = new this.userModel(user);
-    return await createdUser.save();
+    const savedUser = await createdUser.save();
+    // await this.cache.set(, savedUser);
+    return savedUser;
   }
 
   /**
