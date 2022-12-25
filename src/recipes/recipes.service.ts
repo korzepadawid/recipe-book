@@ -2,13 +2,15 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
-  PageDetails,
   RecipePageDto,
   RecipePageQueryDto,
   RecipeRequestDto,
   RecipeResponseDto,
+  RecipeUpdateRequestDto,
 } from './recipe.dto';
 import { Recipe, RecipeDocument } from './recipe.schema';
+
+const PAGE_LIMIT = 5;
 
 interface ICreateRecipe {
   recipeRequestDto: RecipeRequestDto;
@@ -18,6 +20,8 @@ interface ICreateRecipe {
 export interface IFindSingleRecipePage {
   recipePageQueryDto: RecipePageQueryDto;
 }
+
+const getPageOffset = (page: number): number => (page - 1) * PAGE_LIMIT;
 
 @Injectable()
 export class RecipesService {
@@ -44,42 +48,68 @@ export class RecipesService {
 
   /**
    * The method returns a paginated recipes.
-   * @param IFindSingleRecipePage the details of the requested page.
-   * skip [0, ∞+), limit [1, 30]
+   * @param number a number of the page
+   * page [1, ∞+)
    * @returns the requested page
    */
-  async findAll({
-    recipePageQueryDto,
-  }: IFindSingleRecipePage): Promise<RecipePageDto> {
-    const page = await this.getPageDetails(recipePageQueryDto);
+  async findAll(page: number): Promise<RecipePageDto> {
+    const current = Math.max(1, page);
     const recipeLimited = await this.recipeModel
       .find()
       .sort()
-      .skip(page.skip)
-      .limit(page.limit)
+      .skip(getPageOffset(current))
+      .limit(PAGE_LIMIT)
       .exec();
+    const last = await this.getLastPageNumber();
     return {
       data: recipeLimited.map(this.mapRecipeToDto),
-      page,
+      page: {
+        limit: PAGE_LIMIT,
+        current,
+        last,
+      },
     };
   }
 
   /**
    * The method finds recipe by its id, otherwise it throws NotFoundException.
-   * @throws NotFoundException when recipe doesn't exist
    * @param id
    * @returns a dto representation of the recipe with the given id
    */
   async findById(id: string): Promise<RecipeResponseDto> {
-    const recipe = await this.recipeModel.findById(id).exec();
-    if (!recipe) {
-      throw new NotFoundException('recipe not found');
-    }
+    const recipe = await this.findRecipeByIdOrThrow(id);
     return this.mapRecipeToDto(recipe);
   }
 
-  async update(id: string, recipeRequestDto: RecipeRequestDto): Promise<void> {
-    console.log('not implemented');
+  /**
+   *
+   * @param id
+   * @param recipeUpdates
+   */
+  async update(
+    id: string,
+    recipeUpdates: RecipeUpdateRequestDto,
+  ): Promise<void> {
+    const recipe = await this.findRecipeByIdOrThrow(id);
+    const { description, ingredients, steps, title } = recipeUpdates;
+
+    if (description) {
+      recipe.description = description;
+    }
+
+    if (ingredients) {
+      recipe.ingredients = ingredients;
+    }
+
+    if (steps) {
+      recipe.steps = steps;
+    }
+
+    if (title) {
+      recipe.title = title;
+    }
+
+    await recipe.save();
   }
 
   /**
@@ -94,22 +124,30 @@ export class RecipesService {
   }
 
   /**
-   * The method returns the details about the given page.
-   * @param RecipePageQueryDto recipes to skip and recipe limit on a single page
-   * @returns the details of the page
+   * The method returns a recipe with the given id, othwerwise throws an error.
+   * @throws NotFoundException when recipe doesn't exist
+   * @param id an id of the requested recipe
+   * @returns a recipe with the given id
    */
-  async getPageDetails({
-    skip,
-    limit,
-  }: RecipePageQueryDto): Promise<PageDetails> {
-    const parsedSkip = Math.max(0, skip);
-    const parsedLimit = Math.min(30, limit);
-    const count = await this.recipeModel.countDocuments().exec();
-    return {
-      skip: parsedSkip,
-      limit: parsedLimit,
-      count,
-    };
+  async findRecipeByIdOrThrow(id: string): Promise<RecipeDocument> {
+    const recipe = await this.recipeModel.findById(id).exec();
+    if (!recipe) {
+      throw new NotFoundException('recipe not found');
+    }
+    return recipe;
+  }
+
+  /**
+   * The method returns the number of the last page.
+   * @returns the number of the last page
+   */
+  async getLastPageNumber(): Promise<number> {
+    const total = await this.recipeModel.countDocuments().exec();
+    const div = Math.floor(total / PAGE_LIMIT);
+    if (total != 0 && total % PAGE_LIMIT == 0) {
+      return div;
+    }
+    return div + 1;
   }
 
   /**

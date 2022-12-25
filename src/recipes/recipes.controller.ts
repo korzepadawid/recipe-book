@@ -14,11 +14,13 @@ import {
 } from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import {
+  ForbiddenErrorDto,
   NotFoundErrorDto,
   RecipePageDto,
   RecipePageQueryDto,
   RecipeRequestDto,
   RecipeResponseDto,
+  RecipeUpdateRequestDto,
   UnauthorizedErrorDto,
 } from './recipe.dto';
 import {
@@ -31,6 +33,7 @@ import {
   ApiParam,
   ApiTags,
   ApiNotFoundResponse,
+  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RecipeOwnerGuard } from './recipe.guard';
@@ -76,10 +79,8 @@ export class RecipesController {
   })
   @HttpCode(HttpStatus.OK)
   @Get()
-  async findAll(
-    @Query() recipePageQueryDto: RecipePageQueryDto,
-  ): Promise<RecipePageDto> {
-    return this.recipesService.findAll({ recipePageQueryDto });
+  async findAll(@Query() { page }: RecipePageQueryDto): Promise<RecipePageDto> {
+    return this.recipesService.findAll(page);
   }
 
   @ApiOkResponse({
@@ -113,6 +114,10 @@ export class RecipesController {
     description: 'Authentication required.',
     type: UnauthorizedErrorDto,
   })
+  @ApiForbiddenResponse({
+    description: 'Insufficient permission',
+    type: ForbiddenErrorDto,
+  })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RecipeOwnerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -120,9 +125,9 @@ export class RecipesController {
   @Patch(':id')
   async update(
     @Param('id') id: string,
-    @Body() recipeRequestDto: RecipeRequestDto,
+    @Body() recipeUpdateRequestDto: RecipeUpdateRequestDto,
   ): Promise<void> {
-    return this.recipesService.update(id, recipeRequestDto);
+    return this.recipesService.update(id, recipeUpdateRequestDto);
   }
 
   @ApiOperation({
@@ -136,6 +141,10 @@ export class RecipesController {
   @ApiUnauthorizedResponse({
     description: 'Authentication required.',
     type: UnauthorizedErrorDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Insufficient permission',
+    type: ForbiddenErrorDto,
   })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RecipeOwnerGuard)
