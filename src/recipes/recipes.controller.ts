@@ -12,7 +12,7 @@ import {
   Request,
   Query,
 } from '@nestjs/common';
-import { IFindSingleRecipePage, RecipesService } from './recipes.service';
+import { RecipesService } from './recipes.service';
 import {
   NotFoundErrorDto,
   RecipePageDto,
@@ -33,6 +33,7 @@ import {
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RecipeOwnerGuard } from './recipe.guard';
 
 @ApiTags('Recipes')
 @Controller('recipes')
@@ -113,7 +114,7 @@ export class RecipesController {
     type: UnauthorizedErrorDto,
   })
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RecipeOwnerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id' })
   @Patch(':id')
@@ -137,7 +138,7 @@ export class RecipesController {
     type: UnauthorizedErrorDto,
   })
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RecipeOwnerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id' })
   @Delete(':id')

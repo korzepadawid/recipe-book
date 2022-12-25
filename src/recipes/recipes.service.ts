@@ -66,7 +66,7 @@ export class RecipesService {
 
   /**
    * The method finds recipe by its id, otherwise it throws NotFoundException.
-   * @throws NotFoundException when recipe does't exist
+   * @throws NotFoundException when recipe doesn't exist
    * @param id
    * @returns a dto representation of the recipe with the given id
    */
@@ -82,8 +82,15 @@ export class RecipesService {
     console.log('not implemented');
   }
 
+  /**
+   * The method removes a recipe by its id. It's no-op if there's no such item.
+   * @param id the recipe's id
+   */
   async remove(id: string): Promise<void> {
-    console.log('not implemented');
+    const recipe = await this.recipeModel.findById(id).exec();
+    if (recipe) {
+      await recipe.delete();
+    }
   }
 
   /**
