@@ -15,18 +15,21 @@ services:
     depends_on:
       - mongo
       - redis
+
   mongo:
-    image: mongo
+    image: mongo:latest
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
     ports:
       - 27017:27017
+
   redis:  
     image: redis:7.0.4-alpine
     ports:
       - "6379:6379"
+
   redis-commander:
     image: rediscommander/redis-commander:latest
     restart: always
@@ -37,7 +40,7 @@ services:
         - 8082:8081
 
   mongo-express:
-    image: mongo-express
+    image: mongo-express:latest
     restart: always
     ports:
       - 8081:8081

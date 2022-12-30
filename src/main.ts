@@ -10,7 +10,7 @@ import { AppModule } from './app.module';
 const configSwagger = (): Omit<OpenAPIObject, 'paths'> =>
   new DocumentBuilder()
     .addBearerAuth()
-    .setTitle('My social media platform')
+    .setTitle('My recipe book.')
     .setDescription('The endpoints documentation with the OpenAPI')
     .setVersion('1.0')
     .build();
