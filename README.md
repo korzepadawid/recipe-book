@@ -25,6 +25,8 @@ Implemented features such as:
 - Swagger documentation
 - Pagination with details, such as last page, limit etc.
 
+Uploaded the Docker image of the app to Dockerhub (https://hub.docker.com/r/korzepadawid/recipebook/tags)[https://hub.docker.com/r/korzepadawid/recipebook/tags].
+
 > Developed during the "REST API Development course" at Adam Mickiewicz University.
 
 ## Launch 🐳
@@ -32,7 +34,7 @@ Implemented features such as:
 ### Dev
 
 ```
-$ docker-compose -f docker-compose.dev.yaml up --build
+$ docker-compose -f docker-compose.dev.yaml up
 ```
 ### Navigation
 
