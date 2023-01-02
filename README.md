@@ -1,6 +1,6 @@
 # recipe-book 🍕🍟🍔
 
-The application for sharing your cooking recipes with others.
+The application for sharing your cooking recipes with others 🍟
 
 ## Table of content
 - [Tech](#tech-)
